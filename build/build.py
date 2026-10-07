@@ -17,8 +17,15 @@ MEDIA_WORDS = 20
 DIR = re.compile(r'[‎‏‪-‮⁨⁩]')
 LINE = re.compile(r'^(\d+)/(\d+)/(\d+), (\d+):(\d+) - ([^:]+?): (.*)$')
 SYS = re.compile(r'^\d+/\d+/\d+, \d+:\d+ - ')
-LETTER = r'(?:[^\W_]|[֑-ׇ])'
-WORD = re.compile(LETTER + r"+(?:['\"׳״]" + LETTER + r'+)*')
+# Word rules: whitespace and any symbol (- / _ + emoji ...) split words; punctuation
+# (. , ! ? : ; quotes, geresh, parentheses) is ignored and does not split; a switch
+# between Hebrew, English letters and digits starts a new word.
+PUNCT = re.compile(r"""[.,!?;:'"׳״()\[\]{}…“”‘’«»־‐-―]""".replace('־‐-―', ''))
+WORD = re.compile(r'[א-ת֑-ׇיִ-ﭏ]+|[A-Za-zÀ-ɏ]+|[0-9]+|[^\W\d_A-Za-zÀ-ɏא-ת]+')
+
+
+def words_of(text):
+    return WORD.findall(PUNCT.sub('', URL.sub(' ', text)))
 URL = re.compile(r'https?://\S+')
 EMOJI = re.compile('[\U0001F000-\U0001F3FA\U0001F400-\U0001FAFF\u2600-\u27BF\u2B00-\u2BFF\u2300-\u23FF]')
 STOP = set('של את זה על לא אני יש מה גם עם כל אם הוא היא אבל או כי רק אז לי לך לו לה אתה אתם הם הן אנחנו שלא זאת אין עוד כמו היה היו מי איך למה כן פה שם עד אחד אחת יותר הכי כבר עכשיו שזה מישהו משהו בזה אותו אותה אותי אותך שלי שלך שלו שלה שלנו שלכם להם לנו לכם אצל בין רוצה צריך יכול אפשר ממש סתם טוב בסדר אוקיי ok זו הזה הזאת היום מחר שיש ככה כך מתי איפה כאן אולי בגלל הרי בכל לכל מכל עליו עליה עלי ביום וזה וגם ואני ולא שאני שהוא שהם the'.split())
@@ -99,12 +106,12 @@ def build(path):
                 if ln:
                     lines.append(ln)
             body = '\n'.join(lines)
-        words = MEDIA_WORDS if kind == 'm' else len(WORD.findall(URL.sub('', body)))
+        words = MEDIA_WORDS if kind == 'm' else len(words_of(body))
         if name not in idx:
             idx[name] = len(people)
             people.append(name)
         clean = URL.sub('', redact(body, names)) if kind in 'tp' else ''
-        toks = [w.lower() for w in WORD.findall(clean)]
+        toks = [w.lower() for w in words_of(clean)]
         toks = [w for w in toks if len(w) > 1 and w not in STOP and not w.isdigit()]
         emo = EMOJI.findall(clean)
         q = 1 if re.search(r'[?？]\s*$', clean) else 0
