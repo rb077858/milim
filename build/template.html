@@ -1,8 +1,17 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4A33C4">
 <title>מחזור המלכים במילים</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Suez+One&family=Rubik:wght@400;500;600;700&display=swap">
 <style>
+[hidden]{display:none!important}
+html,body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px)}
 /* Layout: one centered column (max 1080px), sticky month bar on top, sections stacked; RTL throughout */
 :root{
   --bg:#F2F1F8; --surface:#FFFFFF; --sunk:#E9E7F3; --ink:#1C1838; --muted:#625E82; --line:#DEDBEC;
@@ -158,6 +167,44 @@ textarea{width:100%;min-height:90px;resize:vertical}
 
 footer{color:var(--muted);font-size:.82rem;max-width:70ch;display:grid;gap:6px}
 .empty{color:var(--muted);font-size:.9rem;padding:8px 0}
+section.card{scroll-margin-top:70px}
+.tabs{display:none}
+.sheet{position:fixed;inset:0;z-index:9;background:rgb(0 0 0/.35);display:flex;align-items:flex-end}
+.sheet-in{background:var(--surface);width:100%;border-radius:18px 18px 0 0;padding:12px 16px calc(78px + env(safe-area-inset-bottom,0px));display:grid;gap:4px}
+.sheet-in a{color:var(--ink);text-decoration:none;font-size:1.05rem;padding:14px 12px;border-radius:12px;background:var(--bg)}
+@media (max-width:760px){
+  body{padding-block:0 calc(84px + env(safe-area-inset-bottom,0px))}
+  .tabs{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;inset-inline:0;z-index:10;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 4px env(safe-area-inset-bottom,0px)}
+  .tabs a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 4px;color:var(--muted);text-decoration:none;font-size:.7rem;border-radius:12px;min-height:52px;justify-content:center;-webkit-tap-highlight-color:transparent}
+  .tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tabs a.on{color:var(--royal);font-weight:600}
+  .tabs a.on svg{stroke-width:2.3}
+  .bar{padding:8px 16px}
+  .pills{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100%;-webkit-overflow-scrolling:touch}
+  .pills::-webkit-scrollbar{display:none}
+  .pill{flex:1 0 auto;padding:9px 14px;font-size:.95rem}
+  .hero{padding-top:14px;gap:12px}
+  .hero h1{font-size:2rem}
+  .stats{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat{padding:10px 12px}
+  .stat b{font-size:1.45rem}
+  .stat:last-child{grid-column:1/-1}
+  section.card{border-radius:16px;padding:16px 14px;gap:12px}
+  h2{font-size:1.35rem}
+  .head{align-items:stretch}
+  .ctrl{width:100%}
+  .ctrl select{flex:1;min-width:0;min-height:44px;font-size:1rem}
+  .seg{width:100%}.seg button{flex:1;min-height:38px}
+  .heat{min-width:0;grid-template-columns:1.6rem repeat(24,1fr);gap:1.5px;font-size:.6rem}
+  .awards{grid-template-columns:repeat(2,1fr);gap:8px}
+  .award{padding:11px}
+  .award .w{font-size:1.1rem}
+  .award .why{font-size:.78rem}
+  .minis{grid-template-columns:repeat(3,1fr);gap:6px}
+  .mini b{font-size:1.1rem}
+  .brow{min-height:30px}
+  .wrap{gap:16px}
+}
 @media (max-width:560px){
   .brow{grid-template-columns:5.5rem 1fr 5.2rem;gap:6px}
   .vrow{grid-template-columns:1fr 5.5rem 1fr}
@@ -165,12 +212,29 @@ footer{color:var(--muted);font-size:.82rem;max-width:70ch;display:grid;gap:6px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+</head>
+<body>
 
 <div class="bar"><div class="bar-in">
   <div class="bar-title">👑 מחזור המלכים</div>
   <div class="pills" id="months" role="group" aria-label="בחירת חודש"></div>
 </div></div>
 
+<nav class="tabs" id="tabs" aria-label="ניווט בין חלקי הדף">
+  <a href="#budget-sec" data-s="budget-sec"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg><span>תקציב</span></a>
+  <a href="#awards-sec" data-s="awards-sec"><svg viewBox="0 0 24 24"><path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/></svg><span>פרסים</span></a>
+  <a href="#profile-sec" data-s="profile-sec"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/></svg><span>אישי</span></a>
+  <a href="#vs-sec" data-s="vs-sec"><svg viewBox="0 0 24 24"><path d="M7 4v16M17 4v16M3 12h8M13 12h8"/></svg><span>ראש בראש</span></a>
+  <a href="#more" data-s="more" id="more-btn"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>עוד</span></a>
+</nav>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-in">
+    <a href="#long-sec">ההודעות הכי ארוכות</a>
+    <a href="#time-sec">מתי הקבוצה מדברת</a>
+    <a href="#words-sec">המילים של הקבוצה</a>
+    <a href="#calc-sec">מחשבון מילים</a>
+  </div>
+</div>
 <div class="wrap">
   <header class="hero">
     <div class="crowns">מחזור ה׳ · המלכים · הר עציון</div>
@@ -188,17 +252,17 @@ footer{color:var(--muted);font-size:.82rem;max-width:70ch;display:grid;gap:6px}
     <div class="scroll" id="matrix" hidden></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="awards-sec">
     <div class="head"><div><h2>טקס הפרסים</h2><p id="awards-p">מי זכה במה בתקופה שבחרת.</p></div></div>
     <div class="awards" id="awards"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="long-sec">
     <div class="head"><div><h2>ההודעות הכי ארוכות</h2><p>עשר ההודעות עם הכי הרבה מילים בתקופה. רק מי, מתי וכמה. התוכן נשאר בקבוצה.</p></div></div>
     <div class="msgs" id="longest"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="time-sec">
     <div class="head"><div><h2>מתי הקבוצה מדברת</h2><p>מילים לפי יום ושעה. ככל שהריבוע כהה יותר, כתבו יותר.</p></div></div>
     <div class="grid2">
       <div class="scroll"><div class="heat" id="heat"></div></div>
@@ -206,7 +270,7 @@ footer{color:var(--muted);font-size:.82rem;max-width:70ch;display:grid;gap:6px}
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="words-sec">
     <div class="head"><div><h2>המילים של הקבוצה</h2><p>המילים שחוזרות הכי הרבה (בלי מילות קישור).</p></div></div>
     <div class="cloud" id="cloud"></div>
     <h3>אימוג׳ים מובילים</h3>
@@ -219,13 +283,13 @@ footer{color:var(--muted);font-size:.82rem;max-width:70ch;display:grid;gap:6px}
     <div class="prof" id="prof"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="vs-sec">
     <div class="head"><div><h2>ראש בראש</h2><p>שני משתתפים, אחד מול השני, בתקופה שבחרת.</p></div>
       <div class="ctrl"><select id="va" aria-label="משתתף ראשון"></select><span class="muted">מול</span><select id="vb" aria-label="משתתף שני"></select></div></div>
     <div class="vs" id="vs"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="calc-sec">
     <div class="head"><div><h2>מחשבון מילים</h2><p>הדבק הודעה לפני ששולחים ותראה כמה היא תעלה לך מתוך ה-500. מקפים לא עוזרים כאן.</p></div></div>
     <textarea id="calc" aria-label="טקסט לספירה">לעשות-קובץ-שכולם-יכולים-להיכנס-אליו ולראות-כמה-כל-אחד-כתב</textarea>
     <div class="calc-out"><div><b id="calc-n">0</b> <span class="muted">מילים</span></div><div class="muted small" id="calc-left"></div></div>
@@ -388,7 +452,7 @@ function renderTimeline(list){
 const tops=()=>TOPS[state.month]||{w:[],e:[],pw:{},pe:{}};
 function renderWords(list){
   let tw=tops().w;const tw2=tw.filter(x=>x[1]>1);if(tw2.length>=12)tw=tw2;const max=tw[0]?tw[0][1]:1;
-  $('cloud').innerHTML=tw.length?tw.map(([w,c])=>`<span data-w="${esc(w)}" title="${c} פעמים" style="font-size:${(max>1?.85+1.3*Math.sqrt((c-1)/(max-1)):1).toFixed(2)}rem;font-weight:${c/max>.6&&c>1?600:400};color:${c/max>.6&&c>1?'var(--royal)':'var(--ink)'}">${esc(w)}</span>`).join(''):'<p class="empty">אין מילים בתקופה הזו.</p>';
+  $('cloud').innerHTML=tw.length?tw.map(([w,c])=>`<span data-w="${esc(w)}" title="${c} פעמים" style="font-size:${(max>1?.85+(innerWidth<760?.75:1.3)*Math.sqrt((c-1)/(max-1)):1).toFixed(2)}rem;font-weight:${c/max>.6&&c>1?600:400};color:${c/max>.6&&c>1?'var(--royal)':'var(--ink)'}">${esc(w)}</span>`).join(''):'<p class="empty">אין מילים בתקופה הזו.</p>';
   const te=tops().e;
   $('emo').innerHTML=te.length?te.map(([e,c])=>`<span>${e}<small>${c}</small></span>`).join(''):'<p class="empty">אין אימוג׳ים.</p>';
 }
@@ -422,7 +486,7 @@ function renderProfile(){
      <div class="mini"><b>${mine.length?String(peak).padStart(2,'0')+':00':'—'}</b><span>השעה הכי פעילה</span></div>
    </div>
    <div class="grid2">
-     <div><h3 style="margin-bottom:8px">תקציב בכל חודש</h3><div class="budget">${perMonth.map(r=>{const left=BUDGET-r.w,over=left<0;return `<div class="brow${over?' over':''}" style="cursor:default"><span class="bname">${mLabel(r.k)}</span><div class="track"><div class="fill" style="width:${over?100:left/BUDGET*100}%"></div></div><span class="bval"><b>${left}</b> <span class="muted">נשארו</span></span></div>`}).join('')}</div></div>
+     <div><h3 style="margin-bottom:8px">תקציב בכל חודש</h3><div class="budget">${perMonth.map(r=>{const left=BUDGET-r.w,over=left<0;return `<div class="brow${over?' over':''}" style="cursor:default"><span class="bname">${HEB_M[+r.k.split('-')[1]-1]}</span><div class="track"><div class="fill" style="width:${over?100:left/BUDGET*100}%"></div></div><span class="bval"><b>${left}</b> <span class="muted">נשארו</span></span></div>`}).join('')}</div></div>
      <div><h3 style="margin-bottom:8px">הודעות לפי שעה</h3><div class="hours">${hours.map((v,h)=>`<div title="${h}:00 · ${v} הודעות" style="height:${v/hmax*100}%"></div>`).join('')}</div><div class="hours-l"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div></div>
    </div>
    <div><h3 style="margin-bottom:8px">המילים שלו</h3><div class="cloud">${tw.length?tw.map(([w,c])=>`<span title="${c} פעמים" style="font-size:${(.9+.8*c/tw[0][1]).toFixed(2)}rem">${esc(w)}</span>`).join(''):'<span class="muted">אין מילים בתקופה הזו</span>'}</div>
@@ -457,8 +521,21 @@ function renderAll(){
   renderStats(list,a);renderBudget(a);renderAwards(a,list);renderLongest(list);renderHeat(list);renderTimeline(list);renderWords(list);renderProfile();renderVs();renderCalc();
   $('awards-p').textContent='מי זכה במה '+scopeLabel()+'.';
 }
+(function nav(){
+  const tabs=[...document.querySelectorAll('#tabs a')], sheet=$('sheet');
+  const go=id=>{const el=$(id);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'})};
+  $('tabs').addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();
+    if(a.dataset.s==='more'){sheet.hidden=!sheet.hidden;return}sheet.hidden=true;go(a.dataset.s)});
+  sheet.addEventListener('click',e=>{const a=e.target.closest('a');e.preventDefault();sheet.hidden=true;if(a)go(a.getAttribute('href').slice(1))});
+  const more=['long-sec','time-sec','words-sec','calc-sec'];
+  const io=new IntersectionObserver(es=>{for(const en of es){if(!en.isIntersecting)continue;const id=en.target.id;
+    tabs.forEach(t=>t.classList.toggle('on',t.dataset.s===id||(t.dataset.s==='more'&&more.includes(id))))}},{rootMargin:'-45% 0px -50% 0px'});
+  document.querySelectorAll('section.card[id]').forEach(s=>io.observe(s));
+})();
 fillSelects();
 $('asof').textContent=`הנתונים מעודכנים עד ההודעה האחרונה בייצוא: ${dd(lastMsg.d)} בשעה ${hm(lastMsg.t)}.`;
 renderAll();
 })();
 </script>
+</body>
+</html>
