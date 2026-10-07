@@ -291,8 +291,8 @@ section.card{scroll-margin-top:70px}
 
   <section class="card" id="calc-sec">
     <div class="head"><div><h2>מחשבון מילים</h2><p>הדבק הודעה לפני ששולחים ותראה כמה היא תעלה לך מתוך ה-500. מקפים לא עוזרים כאן.</p></div></div>
-    <textarea id="calc" aria-label="טקסט לספירה">לעשות-קובץ-שכולם-יכולים-להיכנס-אליו ולראות-כמה-כל-אחד-כתב</textarea>
-    <div class="calc-out"><div><b id="calc-n">0</b> <span class="muted">מילים</span></div><div class="muted small" id="calc-left"></div></div>
+    <textarea id="calc" aria-label="טקסט לספירה" placeholder="הדבק או כתוב כאן הודעה"></textarea>
+    <div class="calc-out"><div><b id="calc-n">0</b> <span class="muted">מילים</span></div></div>
     <div class="toks" id="calc-t"></div>
   </section>
 
@@ -510,10 +510,8 @@ function renderCalc(){
   const w=countWords($('calc').value);
   $('calc-n').textContent=w.length;
   $('calc-t').innerHTML=w.slice(0,200).map(x=>`<span>${esc(x)}</span>`).join('');
-  const i=+$('psel').value, used=M.filter(m=>m.p===i&&monthKey(m.d)===monthKey(lastMsg.d)).reduce((s,m)=>s+m.w,0);
-  $('calc-left').textContent=`אם ${P[i]} ישלח את זה ב${HEB_M[+monthKey(lastMsg.d).split('-')[1]-1]}, יישארו לו ${BUDGET-used-w.length} מילים.`;
 }
-$('calc').oninput=renderCalc;$('psel').addEventListener('change',renderCalc);
+$('calc').oninput=renderCalc;
 
 function renderAll(){
   renderPills();
