@@ -290,14 +290,14 @@ section.card{scroll-margin-top:70px}
   </section>
 
   <section class="card" id="calc-sec">
-    <div class="head"><div><h2>מחשבון מילים</h2><p>הדבק הודעה לפני ששולחים ותראה כמה היא תעלה לך מתוך ה-500. מקפים לא עוזרים כאן.</p></div></div>
+    <div class="head"><div><h2>מחשבון מילים</h2><p>הדבק הודעה לפני ששולחים ותראה כמה היא תעלה לך מתוך ה-500. מקפים, לוכסנים ואותיות באנגלית באמצע מילה לא יעזרו כאן.</p></div></div>
     <textarea id="calc" aria-label="טקסט לספירה" placeholder="הדבק או כתוב כאן הודעה"></textarea>
     <div class="calc-out"><div><b id="calc-n">0</b> <span class="muted">מילים</span></div></div>
     <div class="toks" id="calc-t"></div>
   </section>
 
   <footer>
-    <p><b>איך סופרים:</b> מילה היא רצף של אותיות או מספרים. מקף, קו תחתון, נקודה ולוכסן מפרידים בין מילים, ולכן "אחד-שתיים" זה שתי מילים. גרש וגרשיים בתוך מילה לא מפרידים (צ׳יפס, לו״ז).</p>
+    <p><b>איך סופרים:</b> רווח וכל סימן (מקף, לוכסן, קו תחתון, אימוג׳י וכו׳) מפרידים בין מילים, ולכן "ראם/הלך/לטיול" זה 3 מילים. גם מעבר בין עברית, אנגלית ומספרים מתחיל מילה חדשה, ולכן "ראםhsjהלךaלטיול" זה 5 מילים. סימני פיסוק (נקודה, פסיק, סימן שאלה וקריאה, נקודתיים, גרש, גרשיים וסוגריים) לא מפרידים ולא נספרים.</p>
     <p><b>כל תמונה, סרטון, סטיקר, הודעה קולית או קובץ שווים 20 מילים.</b> שאלות ותשובות בסקרים נספרות. קישורים, הודעות שנמחקו, אימוג׳ים והודעות מערכת לא נספרים. התקציב הוא 500 מילים לכל אחד בכל חודש לועזי.</p>
     <p id="asof"></p>
   </footer>
@@ -322,8 +322,9 @@ const mLabel=k=>{const [y,m]=k.split('-');return HEB_M[+m-1]+' '+y};
 const months=[...new Set(M.map(m=>monthKey(m.d)))].sort();
 const lastMsg=M[M.length-1];
 const EMO=/\p{Extended_Pictographic}/gu;
-const WORD=/[\p{L}\p{N}\p{M}]+(?:['"׳״][\p{L}\p{N}\p{M}]+)*/gu;
-const countWords=s=>(s.replace(/https?:\/\/\S+/g,'').match(WORD)||[]);
+const PUNCT=/[.,!?;:'"\u05f3\u05f4()\[\]{}\u2026\u201c\u201d\u2018\u2019\u00ab\u00bb]/g;
+const WORD=/[\u05d0-\u05ea\u0591-\u05c7\ufb1d-\ufb4f]+|[A-Za-z\u00c0-\u024f]+|[0-9]+|[^\P{L}A-Za-z\u00c0-\u024f\u05d0-\u05ea]+/gu;
+const countWords=s=>(s.replace(/https?:\/\/\S+/g,' ').replace(PUNCT,'').match(WORD)||[]);
 let state={month:months[months.length-1],bsort:'left'};
 try{const s=localStorage.getItem('kings-month');if(s&&(s==='all'||months.includes(s)))state.month=s}catch(e){}
 const inScope=m=>state.month==='all'||monthKey(m.d)===state.month;
