@@ -28,7 +28,7 @@ def main(out, month=None):
     for k, v in d.get('adj', {}).items():
         mk, p = k.split('|')
         if mk == month:
-            used[int(p)] -= v
+            used[int(p)] -= 20 * v  # graph images don't count
     rows = [(people[i], used[i]) for i in range(len(people)) if people[i] != 'לא מזוהה']
     rows.sort(key=lambda r: (BUDGET - r[1], r[0]))
     rows = rows[::-1]  # matplotlib draws bottom-up

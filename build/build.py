@@ -12,7 +12,7 @@ import collections, glob, hashlib, io, json, os, re, sys, zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 NAMES = os.path.join(HERE, 'names.json')
-ADJ = os.path.join(HERE, 'adjustments.json')  # words given back: [{name, month, words, note}]
+ADJ = os.path.join(HERE, 'adjustments.json')  # graph images not to count: [{name, month, images, note}]
 MEDIA_WORDS = 20
 # Graph screenshots Ram posts with a 🔹 in the caption are free (not counted at all).
 FREE_MEDIA_SENDER, FREE_MEDIA_MARK = 'ראם', '\U0001F539'
@@ -143,7 +143,7 @@ def build(path):
         with open(ADJ, encoding='utf-8') as f:
             for a in json.load(f):
                 if a['name'] in idx:
-                    adj[f"{a['month']}|{idx[a['name']]}"] += a['words']
+                    adj[f"{a['month']}|{idx[a['name']]}"] += a['images']
     adj = dict(adj)
     data = json.dumps({'people': people, 'msgs': out, 'tops': tops, 'adj': adj}, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
     with open(os.path.join(HERE, 'template.html'), encoding='utf-8') as f:
@@ -155,7 +155,7 @@ def build(path):
     for r in out:
         total[people[r[2]]] += r[3]
     for k, v in adj.items():
-        print(f'  credit {people[int(k.split("|")[1])]} {k.split("|")[0]}: -{v}')
+        print(f'  graph images {people[int(k.split("|")[1])]} {k.split("|")[0]}: {v} (-{v * MEDIA_WORDS} words)')
     print(f'{len(out)} messages, {sum(total.values())} words, last {out[-1][0]} {out[-1][1]//60:02d}:{out[-1][1]%60:02d}')
     for n, w in total.most_common():
         print(f'  {w:5d}  {n}')
