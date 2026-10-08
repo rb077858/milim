@@ -13,6 +13,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 NAMES = os.path.join(HERE, 'names.json')
 MEDIA_WORDS = 20
+# Graph screenshots Ram posts with a 🔹 in the caption are free (not counted at all).
+FREE_MEDIA_SENDER, FREE_MEDIA_MARK = 'ראם', '\U0001F539'
+MEDIA_LINE = re.compile(r'^\s*(?:<Media omitted>|<?[\w ]+ omitted>?|\S+\.\w{2,4} \(file attached\))\s*$')
 
 DIR = re.compile(r'[‎‏‪-‮⁨⁩]')
 LINE = re.compile(r'^(\d+)/(\d+)/(\d+), (\d+):(\d+) - ([^:]+?): (.*)$')
@@ -84,7 +87,7 @@ def redact(t, phone_names):
 def build(path):
     names = load_names()
     msgs = parse(read_chat(path))
-    people, idx, out, rows, unknown = [], {}, [], [], collections.Counter()
+    people, idx, out, rows, unknown, free = [], {}, [], [], collections.Counter(), 0
     for m in msgs:
         name = names.get(key(m['s']))
         if not name:
@@ -93,7 +96,12 @@ def build(path):
         raw = m['x'].replace('<This message was edited>', '')
         st = raw.strip()
         kind, body = 't', raw
-        if st == '<Media omitted>' or re.fullmatch(r'<?[\w ]+ omitted>?', st):
+        lines_ = raw.split('\n')
+        if any(MEDIA_LINE.match(ln) for ln in lines_):
+            if name == FREE_MEDIA_SENDER and FREE_MEDIA_MARK in raw:
+                free += 1
+                continue
+            caption = '\n'.join(ln for ln in lines_ if not MEDIA_LINE.match(ln))
             kind, body = 'm', ''
         elif st in ('This message was deleted', 'You deleted this message', 'null'):
             kind, body = 'x', ''
@@ -106,7 +114,7 @@ def build(path):
                 if ln:
                     lines.append(ln)
             body = '\n'.join(lines)
-        words = MEDIA_WORDS if kind == 'm' else len(words_of(body))
+        words = MEDIA_WORDS + len(words_of(caption)) if kind == 'm' else len(words_of(body))
         if name not in idx:
             idx[name] = len(people)
             people.append(name)
@@ -141,6 +149,8 @@ def build(path):
     print(f'{len(out)} messages, {sum(total.values())} words, last {out[-1][0]} {out[-1][1]//60:02d}:{out[-1][1]%60:02d}')
     for n, w in total.most_common():
         print(f'  {w:5d}  {n}')
+    if free:
+        print(f'free graph images (🔹 from {FREE_MEDIA_SENDER}): {free}')
     if unknown:
         print('UNKNOWN SENDERS (add with --add):', dict(unknown))
 
