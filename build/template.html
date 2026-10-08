@@ -298,7 +298,7 @@ section.card{scroll-margin-top:70px}
 
   <footer>
     <p><b>איך סופרים:</b> רווח וכל סימן (מקף, לוכסן, קו תחתון, אימוג׳י וכו׳) מפרידים בין מילים, ולכן "ראם/הלך/לטיול" זה 3 מילים. גם מעבר בין עברית, אנגלית ומספרים מתחיל מילה חדשה, ולכן "ראםhsjהלךaלטיול" זה 5 מילים. סימני פיסוק (נקודה, פסיק, סימן שאלה וקריאה, נקודתיים, גרש, גרשיים וסוגריים) לא מפרידים ולא נספרים.</p>
-    <p><b>כל תמונה, סרטון, סטיקר, הודעה קולית או קובץ שווים 20 מילים. (ועוד המילים בכיתוב, אם יש).</b> תמונות גרף שראם שולח עם 🔹 בכיתוב לא נספרות. מילים שהוחזרו למישהו מסומנות ב-+ ליד המספר שלו. שאלות ותשובות בסקרים נספרות. קישורים, הודעות שנמחקו, אימוג׳ים והודעות מערכת לא נספרים. התקציב הוא 500 מילים לכל אחד בכל חודש לועזי.</p>
+    <p><b>כל תמונה, סרטון, סטיקר, הודעה קולית או קובץ שווים 20 מילים. (ועוד המילים בכיתוב, אם יש).</b> תמונות גרף שראם שולח עם 🔹 בכיתוב לא נספרות. גם תמונות גרף שנשלחו בלי 🔹 ונרשמו ידנית לא נספרות, ומסומנות ב-🔹 ליד המספר. שאלות ותשובות בסקרים נספרות. קישורים, הודעות שנמחקו, אימוג׳ים והודעות מערכת לא נספרים. התקציב הוא 500 מילים לכל אחד בכל חודש לועזי.</p>
     <p id="asof"></p>
   </footer>
 </div>
@@ -310,7 +310,8 @@ const D=JSON.parse(document.getElementById('data').textContent);
 const P=D.people, BUDGET=500;
 const M=D.msgs.map(m=>({d:m[0],t:m[1],p:m[2],w:m[3],k:m[4],e:m[5],q:m[6]}));
 const TOPS=D.tops, ADJ=D.adj||{};
-const credit=(p,k)=>ADJ[k+'|'+p]||0;  // words given back for month k
+// graph images (Ram's screenshots) that don't count, per month|person
+const freeImgs=(p,k)=>k==='all'?Object.entries(ADJ).reduce((s,[key,v])=>s+(key.endsWith('|'+p)?v:0),0):(ADJ[k+'|'+p]||0);
 
 const HEB_M=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 const DAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
@@ -333,13 +334,14 @@ const inScope=m=>state.month==='all'||monthKey(m.d)===state.month;
 const scope=()=>M.filter(inScope);
 const scopeLabel=()=>state.month==='all'?'מאז שהקבוצה התחילה':'ב'+mLabel(state.month);
 
-function agg(list){
+function agg(list,sc=state.month){
   const a=P.map((n,i)=>({i,n,w:0,tw:0,c:0,media:0,del:0,poll:0,emo:0,q:0,night:0,morning:0,text:0,long:null}));
   for(const m of list){const o=a[m.p];o.c++;o.w+=m.w;if(m.k!=='m')o.tw+=m.w;
     if(m.k==='m')o.media++; else if(m.k==='x')o.del++; else{ if(m.k==='p')o.poll++; o.text++;
       o.emo+=m.e; o.q+=m.q;
       if(!o.long||m.w>o.long.w)o.long=m;}
     const h=Math.floor(m.t/60); if(h<5)o.night++; else if(h<8)o.morning++;}
+  for(const o of a){const n=freeImgs(o.i,sc);if(n){o.media-=n;o.c-=n;o.w-=20*n;o.free=n}}
   return a;
 }
 const active=()=>P.map((n,i)=>i).filter(i=>P[i]!=='לא מזוהה');
@@ -352,12 +354,12 @@ function renderPills(){
 $('months').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.month=b.dataset.k;try{localStorage.setItem('kings-month',state.month)}catch(e){}renderAll()};
 
 function renderStats(list,a){
-  const words=list.reduce((s,m)=>s+m.w,0), act=a.filter(o=>o.c>0).length;
+  const words=a.reduce((s,o)=>s+o.w,0), act=a.filter(o=>o.c>0).length;
   const days=new Set(list.map(m=>m.d)).size||1;
   const top=[...a].sort((x,y)=>y.w-x.w)[0];
   $('stats').innerHTML=[
     [fmt(words),'מילים '+scopeLabel()],
-    [fmt(list.length),'הודעות'],
+    [fmt(a.reduce((s,o)=>s+o.c,0)),'הודעות'],
     [act,'משתתפים שכתבו'],
     [fmt(Math.round(words/days)),'מילים ביום בממוצע'],
     [top&&top.w?esc(top.n):'—','הכי הרבה מילים'],
@@ -371,17 +373,17 @@ function renderBudget(a){
   if(isAll){
     $('budget-h').textContent='תקציב לפי חודשים';
     $('budget-p').textContent='כמה מילים נשארו לכל אחד בכל חודש, מתוך 500. אדום אומר שחרג.';
-    const per={};months.forEach(k=>per[k]=agg(M.filter(m=>monthKey(m.d)===k)));
+    const per={};months.forEach(k=>per[k]=agg(M.filter(m=>monthKey(m.d)===k),k));
     const ids=active().sort((x,y)=>a[y].w-a[x].w);
     const cellBg=left=>left<0?'var(--danger-soft)':`color-mix(in srgb,var(--royal-soft) ${Math.round(100-left/5)}%,transparent)`;
     $('matrix').innerHTML=`<table><thead><tr><th>משתתף</th>${months.map(k=>`<th class="num">${mLabel(k)}</th>`).join('')}<th class="num">סה״כ מילים</th></tr></thead><tbody>${
-      ids.map(i=>`<tr><td><span class="who" data-p="${i}" style="cursor:pointer">${esc(P[i])}</span></td>${months.map(k=>{const left=BUDGET-per[k][i].w+credit(i,k);return `<td class="num"><span class="cell" style="background:${cellBg(left)};${left<0?'color:var(--danger);font-weight:600':''}">${left}</span></td>`}).join('')}<td class="num"><b>${fmt(a[i].w)}</b></td></tr>`).join('')}</tbody></table>`;
+      ids.map(i=>`<tr><td><span class="who" data-p="${i}" style="cursor:pointer">${esc(P[i])}</span></td>${months.map(k=>{const left=BUDGET-per[k][i].w;return `<td class="num"><span class="cell" style="background:${cellBg(left)};${left<0?'color:var(--danger);font-weight:600':''}">${left}</span></td>`}).join('')}<td class="num"><b>${fmt(a[i].w)}</b></td></tr>`).join('')}</tbody></table>`;
     return;
   }
   $('budget-h').textContent='תקציב המילים של '+mLabel(state.month);
   const cur=state.month===monthKey(lastMsg.d);
   $('budget-p').textContent=`לכל אחד יש 500 מילים בחודש. ${cur?'נכון ל-'+dd(lastMsg.d)+' בשעה '+hm(lastMsg.t)+'.':'החודש הזה כבר נסגר.'}`;
-  let rows=active().map(i=>{const used=a[i].w-credit(i,state.month);return {i,n:P[i],used,left:BUDGET-used,cr:credit(i,state.month)}});
+  let rows=active().map(i=>({i,n:P[i],used:a[i].w,left:BUDGET-a[i].w,fr:a[i].free||0}));
   rows.sort(state.bsort==='name'?(x,y)=>x.n.localeCompare(y.n,'he'):(x,y)=>x.left-y.left||x.n.localeCompare(y.n,'he'));
   $('budget').innerHTML=rows.map(r=>{
     const over=r.left<0, pct=Math.max(0,Math.min(100,r.left/BUDGET*100));
@@ -389,7 +391,7 @@ function renderBudget(a){
     return `<div class="brow${over?' over':''}" data-p="${r.i}" title="${esc(r.n)}: נוצלו ${r.used}, נשארו ${r.left}">
       <span class="bname">${esc(r.n)}</span>
       <div class="track"><div class="fill" style="width:${over?100:pct}%"></div></div>
-      <span class="bval"><b>${r.left}</b> <span class="muted">נשארו</span>${chip}${r.cr?`<span class="chip warn" title="הוחזרו ${r.cr} מילים">+${r.cr}</span>`:''}</span></div>`}).join('');
+      <span class="bval"><b>${r.left}</b> <span class="muted">נשארו</span>${chip}${r.fr?`<span class="chip warn" title="${r.fr} תמונות של הגרף לא נספרו">🔹${r.fr}</span>`:''}</span></div>`}).join('');
 }
 $('bsort').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.bsort=b.dataset.k;[...$('bsort').children].forEach(x=>x.setAttribute('aria-pressed',x===b));renderBudget(agg(scope()))};
 
@@ -464,7 +466,7 @@ function fillSelects(){
   const ids=active().sort((x,y)=>P[x].localeCompare(P[y],'he'));
   const o=ids.map(i=>`<option value="${i}">${esc(P[i])}</option>`).join('');
   $('psel').innerHTML=o;$('va').innerHTML=o;$('vb').innerHTML=o;
-  const tot=agg(M).sort((a,b)=>b.w-a.w);
+  const tot=agg(M,'all').sort((a,b)=>b.w-a.w);
   $('psel').value=tot[0].i;$('va').value=tot[0].i;$('vb').value=tot[1].i;
 }
 
@@ -475,7 +477,7 @@ function renderProfile(){
   const hours=Array(24).fill(0);mine.forEach(m=>hours[Math.floor(m.t/60)]++);
   const hmax=Math.max(1,...hours), peak=hours.indexOf(Math.max(...hours));
   const tw=tops().pw[i]||[], te=tops().pe[i]||[];
-  const perMonth=months.map(k=>({k,w:all.filter(m=>monthKey(m.d)===k).reduce((s,m)=>s+m.w,0)-credit(i,k)}));
+  const perMonth=months.map(k=>({k,w:all.filter(m=>monthKey(m.d)===k).reduce((s,m)=>s+m.w,0)-20*freeImgs(i,k)}));
   const first=all[0];
   const avg=o.text?(o.tw/o.text).toFixed(1):'0';
   $('prof').innerHTML=`
@@ -501,7 +503,7 @@ $('psel').onchange=renderProfile;
 function renderVs(){
   const a=agg(scope()),x=a[+$('va').value],y=a[+$('vb').value];
   const rows=[['מילים',o=>o.w],['הודעות',o=>o.c],['מילים להודעה',o=>o.text?+(o.tw/o.text).toFixed(1):0],['ההודעה הכי ארוכה',o=>o.long?o.long.w:0],['תמונות וקבצים',o=>o.media],['אימוג׳ים',o=>o.emo],['הודעות לילה',o=>o.night],['סימני שאלה',o=>o.q]];
-  if(state.month!=='all')rows.splice(1,0,['נשאר מה-500',o=>BUDGET-o.w+credit(o.i,state.month)]);
+  if(state.month!=='all')rows.splice(1,0,['נשאר מה-500',o=>BUDGET-o.w]);
   let score=[0,0];
   const body=rows.map(([l,f])=>{const u=f(x),v=f(y),mx=Math.max(1,Math.abs(u),Math.abs(v));if(u>v)score[0]++;else if(v>u)score[1]++;
     return `<div class="vrow"><div class="l"><div class="vb" style="width:${Math.max(0,u)/mx*100}%"></div><span class="${u>v?'win':''}">${u}</span></div><div class="lab">${l}</div><div class="r"><div class="vb" style="width:${Math.max(0,v)/mx*100}%"></div><span class="${v>u?'win':''}">${v}</span></div></div>`}).join('');
