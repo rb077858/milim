@@ -25,10 +25,12 @@ def main(out, month=None):
     for m in msgs:
         if m[0][:7] == month:
             used[m[2]] += m[3]
+    bonus = collections.Counter()
     for k, v in d.get('adj', {}).items():
         mk, p = k.split('|')
         if mk == month:
             used[int(p)] -= 20 * v  # graph images don't count
+            bonus[people[int(p)]] += 20 * v
     rows = [(people[i], used[i]) for i in range(len(people)) if people[i] != 'לא מזוהה']
     rows.sort(key=lambda r: (BUDGET - r[1], r[0]))
     rows = rows[::-1]  # matplotlib draws bottom-up
@@ -47,9 +49,11 @@ def main(out, month=None):
             ax.text(max(left - 8, 30), y, str(left), va='center', ha='right', fontsize=9, color='white', fontweight='bold')
         if u:
             ax.text(BUDGET + 6, y, f'{u} נוצלו', va='center', ha='left', fontsize=8, color=MUTED)
+        if bonus[name]:
+            ax.text(BUDGET + 66, y, f'+{bonus[name]}', va='center', ha='left', fontsize=8, color=GOLD, fontweight='bold')
     ax.set_yticks(range(n))
     ax.set_yticklabels([r[0] for r in rows], fontsize=10.5, color=INK)
-    ax.set_xlim(0, 575)
+    ax.set_xlim(0, 600)
     ax.set_xticks(range(0, 501, 100))
     ax.tick_params(axis='x', colors=MUTED, labelsize=8)
     ax.set_ylim(-0.6, n - 0.4)
