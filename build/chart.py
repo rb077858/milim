@@ -25,6 +25,10 @@ def main(out, month=None):
     for m in msgs:
         if m[0][:7] == month:
             used[m[2]] += m[3]
+    for k, v in d.get('adj', {}).items():
+        mk, p = k.split('|')
+        if mk == month:
+            used[int(p)] -= v
     rows = [(people[i], used[i]) for i in range(len(people)) if people[i] != 'לא מזוהה']
     rows.sort(key=lambda r: (BUDGET - r[1], r[0]))
     rows = rows[::-1]  # matplotlib draws bottom-up
