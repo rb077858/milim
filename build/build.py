@@ -2,6 +2,7 @@
 """Build index.html from a WhatsApp chat export.
 
 Usage:  python3 build/build.py <export.zip | chat.txt>
+        python3 build/build.py --from-data   (full page from build/data.json, no export needed)
 
 Names: build/names.json maps sha256(sender) -> display name, so phone numbers
 and full contact names never appear in the repo. Unknown senders show as "לא מזוהה".
@@ -85,6 +86,14 @@ def redact(t, phone_names):
     return t
 
 
+def write_full(raw):
+    data = json.dumps(raw, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+    with open(os.path.join(HERE, 'template.html'), encoding='utf-8') as f:
+        page = f.read().replace('__DATA__', data)
+    with open(os.path.join(ROOT, 'index.html'), 'w', encoding='utf-8') as f:
+        f.write(page)
+
+
 def build(path):
     names = load_names()
     msgs = parse(read_chat(path))
@@ -145,11 +154,15 @@ def build(path):
                 if a['name'] in idx:
                     adj[f"{a['month']}|{idx[a['name']]}"] += a['images']
     adj = dict(adj)
-    data = json.dumps({'people': people, 'msgs': out, 'tops': tops, 'adj': adj}, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
-    with open(os.path.join(HERE, 'template.html'), encoding='utf-8') as f:
-        page = f.read().replace('__DATA__', data)
-    with open(os.path.join(ROOT, 'index.html'), 'w', encoding='utf-8') as f:
-        f.write(page)
+    raw = {'people': people, 'msgs': out, 'tops': tops, 'adj': adj}
+    with open(os.path.join(HERE, 'data.json'), 'w', encoding='utf-8') as f:  # kept so the page can be rebuilt
+        json.dump(raw, f, ensure_ascii=False, separators=(',', ':'))
+    if os.path.exists(os.path.join(HERE, 'closed.json')):
+        sys.path.insert(0, HERE)
+        import closed  # competition is closed: show the summary page instead of the dashboard
+        closed.render()
+    else:
+        write_full(raw)
 
     total = collections.Counter()
     for r in out:
@@ -172,6 +185,10 @@ if __name__ == '__main__':
         with open(NAMES, 'w', encoding='utf-8') as f:
             json.dump(n, f, ensure_ascii=False, indent=1, sort_keys=True)
         print('added', sys.argv[3])
+    elif len(sys.argv) == 2 and sys.argv[1] == '--from-data':
+        with open(os.path.join(HERE, 'data.json'), encoding='utf-8') as f:
+            write_full(json.load(f))  # rebuild the full dashboard without a new export
+        print('full page rebuilt from build/data.json')
     elif len(sys.argv) == 2:
         build(sys.argv[1])
     else:
