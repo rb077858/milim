@@ -73,12 +73,12 @@ p{{margin:0;color:var(--muted);font-size:1.05rem;text-wrap:pretty}}
 <main>
   <div class="emoji" aria-hidden="true">🏁</div>
   <h1>התחרות נסגרה</h1>
-  <p>תחרות 500 המילים של {mname} הסתיימה ב-{e(closed_on)}. מעכשיו אפשר לכתוב בקבוצה כמה שרוצים. תודה לכל המשתתפים!</p>
+  <p>תחרות 500 המילים הסתיימה ב-{e(closed_on)}, ולא רק לחודש הזה. אין יותר מגבלת מילים, ואפשר לכתוב בקבוצה כמה שרוצים. תודה לכל המשתתפים!</p>
   <div class="tiles">
     <div class="tile top"><span class="lab">כתב הכי הרבה</span><span class="name">{e(most[1])}</span><span class="num">{most[0]} מילים</span></div>
     <div class="tile"><span class="lab">כתב הכי קצת</span><span class="name">{e(least[1])}</span><span class="num">{least[0]} מילים</span></div>
   </div>
-  <p class="foot">לפי ההודעות עד {asof}.{f' {silent} חברים לא כתבו בכלל ב{mname}.' if silent else ''}</p>
+  <p class="foot">לפי ההודעות עד {asof}.{f' {silent} חברים לא כתבו בכלל במהלך התחרות.' if silent else ''}</p>
 </main>
 </body>
 </html>
