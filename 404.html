@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4A33C4">
+<meta http-equiv="refresh" content="10; url=https://reembir.com/h/milim">
+<link rel="canonical" href="https://reembir.com/h/milim">
+<title>הדף הועבר</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Suez+One&family=Rubik:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F2F1F8;--surface:#FFFFFF;--ink:#1C1838;--muted:#625E82;--line:#DEDBEC;--royal:#4A33C4;--royal-ink:#FFFFFF;--soft:#E9E5FB;
+  --display:"Suez One","Rubik",Georgia,serif;--body:"Rubik",system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+@media (prefers-color-scheme: dark){:root{--bg:#110F24;--surface:#1B1835;--ink:#EEECFB;--muted:#A6A2C8;--line:#2E2A55;--royal:#9C8CFF;--royal-ink:#110F24;--soft:#26214A;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.55;padding:max(32px,env(safe-area-inset-top)) 16px 32px;display:grid;place-items:center;min-height:100vh}
+main{max-width:480px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:36px 24px 28px;display:grid;gap:20px;text-align:center;box-shadow:0 20px 50px -30px rgba(40,20,120,.45)}
+.icon{width:72px;height:72px;margin:0 auto;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--royal)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,7vw,2.4rem);margin:0;line-height:1.15}
+p{margin:0;color:var(--muted)}
+.url{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:6px}
+.url code{flex:1;min-width:0;direction:ltr;text-align:left;font:500 .98rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;padding:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+button,.go{font:600 1rem var(--body);border-radius:12px;border:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s}
+button:active,.go:active{transform:scale(.97)}
+.copy{background:var(--surface);color:var(--royal);border:1px solid var(--line);padding:10px 14px;white-space:nowrap}
+.go{background:var(--royal);color:var(--royal-ink);padding:14px 18px;font-size:1.08rem}
+.bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--royal);transform-origin:right;animation:shrink 10s linear forwards}
+@keyframes shrink{to{transform:scaleX(0)}}
+@media (prefers-reduced-motion: reduce){.bar i{animation:none}}
+.count{font-size:.95rem}
+.count b{color:var(--ink);font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<main>
+  <div class="icon" aria-hidden="true">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14 21 3"/><path d="M15 3h6v6"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
+  </div>
+  <h1>דף זה הועבר כתובת</h1>
+  <p>הדף נמצא עכשיו בכתובת החדשה:</p>
+  <div class="url">
+    <code>reembir.com/h/milim</code>
+    <button class="copy" id="copy" type="button">העתקה</button>
+  </div>
+  <a class="go" id="go" href="https://reembir.com/h/milim">מעבר לכתובת החדשה ←</a>
+  <div class="bar" aria-hidden="true"><i></i></div>
+  <p class="count" aria-live="polite">מעבירים אותך אוטומטית בעוד <b id="sec">10</b> שניות</p>
+</main>
+<script>
+(function(){
+  var url='https://reembir.com/h/milim', target=url+location.hash;
+  document.getElementById('go').href=target;
+  var btn=document.getElementById('copy');
+  function done(){btn.textContent='הועתק ✓';setTimeout(function(){btn.textContent='העתקה'},2000)}
+  function fallback(){var t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();try{document.execCommand('copy');done()}catch(e){}t.remove()}
+  btn.addEventListener('click',function(){
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,fallback);else fallback();
+  });
+  var left=10,sec=document.getElementById('sec');
+  var timer=setInterval(function(){left--;sec.textContent=left;if(left<=0){clearInterval(timer);location.replace(target)}},1000);
+})();
+</script>
+</body>
+</html>
