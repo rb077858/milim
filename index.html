@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#4A33C4">
-<link rel="canonical" href="https://reembir.com/h/milim">
+<meta http-equiv="refresh" content="10; url=https://reembir.com/5/milim">
+<link rel="canonical" href="https://reembir.com/5/milim">
 <title>הדף הועבר</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,16 +43,16 @@ button:active,.go:active{transform:scale(.97)}
   <h1>דף זה הועבר כתובת</h1>
   <p>הדף נמצא עכשיו בכתובת החדשה:</p>
   <div class="url">
-    <code>reembir.com/h/milim</code>
+    <code>reembir.com/5/milim</code>
     <button class="copy" id="copy" type="button">העתקה</button>
   </div>
-  <a class="go" id="go" href="https://reembir.com/h/milim">מעבר לכתובת החדשה ←</a>
+  <a class="go" id="go" href="https://reembir.com/5/milim">מעבר לכתובת החדשה ←</a>
   <div class="bar" aria-hidden="true"><i></i></div>
   <p class="count" aria-live="polite">מעבירים אותך אוטומטית בעוד <b id="sec">10</b> שניות</p>
 </main>
 <script>
 (function(){
-  var url='https://reembir.com/h/milim', target=url+location.hash;
+  var url='https://reembir.com/5/milim', target=url+location.hash;
   document.getElementById('go').href=target;
   var btn=document.getElementById('copy');
   function done(){btn.textContent='הועתק ✓';setTimeout(function(){btn.textContent='העתקה'},2000)}
@@ -59,12 +60,6 @@ button:active,.go:active{transform:scale(.97)}
   btn.addEventListener('click',function(){
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,fallback);else fallback();
   });
-  // Until the repo behind /h is live, fall back to the address GitHub serves it at today.
-  if(location.hostname==='reembir.com'&&window.fetch){
-    fetch('/h/milim/',{method:'HEAD',cache:'no-store'}).then(function(r){
-      if(!r.ok){target='/5/milim/'+location.hash;document.getElementById('go').href=target}
-    }).catch(function(){});
-  }
   var left=10,sec=document.getElementById('sec');
   var timer=setInterval(function(){left--;sec.textContent=left;if(left<=0){clearInterval(timer);location.replace(target)}},1000);
 })();
